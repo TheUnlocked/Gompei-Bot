@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 
 from Leaderboards import Leaderboards
+from Weather import Weather
 
 settings = {}
 
@@ -16,6 +17,7 @@ gompei = commands.Bot(command_prefix=get_prefix)
 
 # Extensions
 gompei.add_cog(Leaderboards(gompei))
+gompei.add_cog(Weather(gompei))
 
 # Overwrite
 gompei.remove_command("help")
