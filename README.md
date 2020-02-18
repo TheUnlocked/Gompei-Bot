@@ -21,7 +21,8 @@ Read the docs [here](https://samuelcurrid.github.io/Gompei-Bot/documentation.htm
 2. Clone repo
 3. Put bot token into `config/tokens.json`
 4. Install pip requirements (listed in `requirements.txt`)
-4. Run Gompei.py
+    - To get Weather cog working you will need [plotly orca](https://github.com/plotly/orca) installed and on your path
+5. Run Gompei.py
 
 ## Contributions
 Feel like we're missing a feature? Feel free to request it in our [discord](https://www.discord.gg/zN7UPWN) or make a pull request.
