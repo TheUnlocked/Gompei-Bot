@@ -5,6 +5,7 @@ from discord.ext import commands
 
 from Leaderboards import Leaderboards
 from Weather import Weather
+from Administration import Administration
 
 settings = {}
 
@@ -18,6 +19,7 @@ gompei = commands.Bot(command_prefix=get_prefix)
 # Extensions
 gompei.add_cog(Leaderboards(gompei))
 gompei.add_cog(Weather(gompei))
+gompei.add_cog(Administration(gompei))
 
 # Overwrite
 gompei.remove_command("help")
@@ -99,6 +101,8 @@ async def change_prefix(ctx, prefix):
 		settings[str(ctx.message.guild.id)]["prefix"] = str(prefix)
 
 		await update_state()
+
+
 
 
 gompei.run(json.load(open(os.path.join("config", "tokens.json")))["token"])
