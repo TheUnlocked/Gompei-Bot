@@ -165,9 +165,9 @@ class Leaderboards(commands.Cog):
 
 		if len(leaderboard) / 10 + 1 >= page + modifier > 0:
 			page += modifier
-			scores = await self.score_leaderboard(guild, leaderboard, self.cachedMessages[message.id]["type"])
+			scores = await self.score_leaderboard(guild, leaderboard, self.cachedMessages[message.id]["type"], page)
 			leaderboardEmbed.clear_fields()
-			leaderboardEmbed.add_field(name="User", value="".join(scores.split("\t")[(page - 1) * 10:page * 10]), inline=True)
+			leaderboardEmbed.add_field(name="User", value="".join(scores.split("\t")), inline=True)
 			await message.edit(embed=leaderboardEmbed)
 
 			self.cachedMessages[message.id]["page"] += modifier
@@ -237,7 +237,7 @@ class Leaderboards(commands.Cog):
 							for reaction in message.reactions:
 								if type(reaction.emoji) is not str:
 									if type(reaction.emoji) is not discord.partial_emoji.PartialEmoji:
-										for guildEmoji in self.bot.get_guild(guildID).emojis:
+										for guildEmoji in self.bot.get_guild(int(guildID)).emojis:
 											if reaction.emoji.id == guildEmoji.id:
 												if ("<:" + str(reaction.emoji.name) + ":" + str(reaction.emoji.id) + ">") not in leaderboard["reactionLeaderboard"]:
 													leaderboard["reactionLeaderboard"]["<:" + str(reaction.emoji.name) + ":" + str(reaction.emoji.id) + ">"] = 1
@@ -279,9 +279,9 @@ class Leaderboards(commands.Cog):
 		with open(os.path.join("config", "leaderboards.json"), "r+") as leaderboards:
 			self.leaderboards = json.loads(leaderboards.read())
 
-	async def message_leaderboard(self, ctx, boardType):
+	async def leaderboard(self, ctx, boardType):
 		"""
-		Creates a new message leaderboard
+		Creates a new leaderboard
 		"""
 
 		global embeds
@@ -322,7 +322,7 @@ class Leaderboards(commands.Cog):
 			if leaderboardType == "reactionLeaderboard":
 				name = str(participant)
 			else:
-				if(int(participant) == 456226577798135808):
+				if int(participant) == 456226577798135808:
 					# Skip deleted users
 					True
 				elif guild.get_member(int(participant)) is None:
@@ -348,7 +348,7 @@ class Leaderboards(commands.Cog):
 		Sends the quotes leaderboard
 		"""
 
-		await self.message_leaderboard(ctx, "quotes")
+		await self.leaderboard(ctx, "quotes")
 
 	@commands.command(pass_context=True, name="messages")
 	async def messages(self, ctx):
@@ -356,7 +356,7 @@ class Leaderboards(commands.Cog):
 		Sends the messages leaderboard
 		"""
 
-		await self.message_leaderboard(ctx, "messages")
+		await self.leaderboard(ctx, "messages")
 
 	@commands.command(pass_context=True, name="reactions")
 	async def reactions(self, ctx):
@@ -364,7 +364,7 @@ class Leaderboards(commands.Cog):
 		Sends the reactions leaderboard
 		"""
 
-		await self.message_leaderboard(ctx, "reactions")
+		await self.leaderboard(ctx, "reactions")
 
 	@commands.command(pass_context=True, name="set")
 	async def set_quote_channel(self, ctx):
@@ -412,15 +412,16 @@ class Leaderboards(commands.Cog):
 			await self.update_leaderboards()
 			print("Successfully reset leaderboards")
 
-	async def score_leaderboard(self, guild, leaderboard, leaderboardType):
+	async def score_leaderboard(self, guild, leaderboard, leaderboardType, page):
 		leaderboard = {k: v for k, v in sorted(leaderboard.items(), key=lambda a: a[1], reverse=True)}
+		tempLeaderboard = dict(list(leaderboard.items())[(page - 1) * 10: page * 10])
 
 		pastScore = 0
 		offset = 0
 		position = 0
 		userValues = ""
 
-		for participant in leaderboard:
+		for participant in tempLeaderboard:
 			score = leaderboard[participant]
 
 			if score == pastScore:
@@ -430,18 +431,18 @@ class Leaderboards(commands.Cog):
 				offset = 0
 				pastScore = score
 
-			if int(participant) == 229082074471071754:
-				print(await self.bot.fetch_user(int(participant)))
-
 			if leaderboardType == "reactionLeaderboard":
 				name = str(participant)
 			else:
-				if guild.get_member(int(participant)) is None:
+				if int(participant) == 456226577798135808:
+					# Skip deleted users
+					True
+				elif guild.get_member(int(participant)) is None:
 					name = str(await self.bot.fetch_user(int(participant)))
 				else:
 					name = str(guild.get_member(int(participant)).display_name)
 
-			userValues += "**" + str(position) + ". " + name + "** - " + str(score) + "\n\n\t"
+			userValues += "**" + str(position + ((page - 1) * 10)) + ". " + name + "** - " + str(score) + "\n\n\t"
 
 		if userValues == "":
 			userValues = "None"
